@@ -140,6 +140,7 @@ class Events
                 $from = $message_data['fromid'];
                 $to = $message_data['toid'];
 
+
                 if ($message_data['confirm']) {
                     //同意，进行数据库操作
 
@@ -158,8 +159,11 @@ class Events
                     $tomessage_data = self::$db->select('*')->from('whyuser;')->where('idWhyUser=' . $to)->query();
 
                     $frommessage_data['type'] = 'befrid';
+                    $frommessage_data['frisid'] = $from;
+
 
                     $tomessage_data['type'] = 'befrid';
+                    $tomessage_data['frisid'] = $to;
 
                     Gateway::sendToUid($to, json_encode($frommessage_data));
                     Gateway::sendToUid($from, json_encode($tomessage_data));
