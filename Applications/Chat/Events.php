@@ -78,7 +78,11 @@ class Events
 
 //            $data = array('type'=>'login,'uid'=)
 
+//                echo json_encode(self::$db->query('show tables'));
+
+//                echo json_encode(self::$db->select('*')->from('whyuser_has_whyuser')->query());
                 echo $_SESSION['uid'] . "bind success";
+
                 return;
             case 'searchfri':
                 $searchname = $message_data['searchname'];
@@ -117,7 +121,7 @@ class Events
 
 
                     $resdata['issuccess'] = false;
-                    $resdata['info'] = '用户不存在或不在线';
+                    $resdata['info'] = '用户不在线';
 
                     Gateway::sendToUid($from, json_encode($resdata));
 
@@ -130,7 +134,7 @@ class Events
 
                 $data['type'] = 'makefri';
                 $data['verifycontent'] = $verifycontent;
-                $data['from']=$from;
+                $data['from'] = $from;
                 Gateway::sendToUid($to, json_encode($data));
 
                 return;
@@ -141,22 +145,23 @@ class Events
                 $to = $message_data['toid'];
 
 
+                echo 'confirm1';
                 if ($message_data['confirm']) {
                     //同意，进行数据库操作
-
-                    $insert_id = self::$db->insert('whyuser_has_whyuser;')->cols(array(
+                    echo 'confirm2';
+                    self::$db->insert('whyuser_has_whyuser')->cols(array(
                         'Whos_id' => $from,
                         'Whos_Fri_id' => $to,
                         'notename' => $to))->query();
 
-                    $insert_id = self::$db->insert('whyuser_has_whyuser;')->cols(array(
+                    self::$db->insert('whyuser_has_whyuser')->cols(array(
                         'Whos_id' => $to,
                         'Whos_Fri_id' => $from,
-                        'notename' => $to))->query();
+                        'notename' => $from))->query();
+                    echo 'confirm3';
+                    $frommessage_data = self::$db->select('*')->from('whyuser')->where('idWhyUser=' . $from)->query();
 
-                    $frommessage_data = self::$db->select('*')->from('whyuser;')->where('idWhyUser=' . $from)->query();
-
-                    $tomessage_data = self::$db->select('*')->from('whyuser;')->where('idWhyUser=' . $to)->query();
+                    $tomessage_data = self::$db->select('*')->from('whyuser')->where('idWhyUser=' . $to)->query();
 
                     $frommessage_data['type'] = 'befrid';
                     $frommessage_data['frisid'] = $from;
@@ -180,23 +185,26 @@ class Events
 
                 return;
 
-            case 'secrettalk':
-                //单聊消息发送流程。客户端给服务器发一条'secrettalk'消息。
 
-                $from = $message_data['fromid'];
-                $to = $message_data['toid'];
+//            $data = {
+//                      sender: 'self',
+//				        type: 'text',
+//						content: 'xxxxx'
+//                        };
 
-                Gateway::sendToUid($to, json_encode($message_data));
 
-                return;
+            case 'chat':
+                switch ($message_data['chatype']) {
+                    case 'secretchat':
 
-            case 'grouptalk':
-                //群聊聊消息发送流程。客户端给服务器发一条'grouptalk'消息。
+                        Gateway::sendToUid($to, json_encode($message_data));
+                        return;
+                    case 'groupchat':
 
-                $from = $message_data['fromid'];
-                $to = $message_data['toid'];
 
-                Gateway::sendToGroup($to, json_encode($message_data));
+                        Gateway::sendToGroup($to, json_encode($message_data));
+                        return;
+                }
 
                 return;
 
